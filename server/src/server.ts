@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import connectDB from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
@@ -10,6 +11,13 @@ connectDB();
 
 const app = express();
 app.use(express.json());
+
+// ✅ Enable CORS for frontend origin
+app.use(
+    cors({
+      origin: 'http://localhost:5173', // your Vite dev server
+    })
+  );
 
 // Routes
 app.use('/api/users', userRoutes);
