@@ -9,13 +9,14 @@ import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Protect all routes
-router.use(authMiddleware);
+// /api/projects/:projectId/tasks
+router
+  .route('/projects/:projectId/tasks')
+  .get(authMiddleware, getTasks)
+  .post(authMiddleware, createTask);
 
-// Routes
-router.get('/:projectId', getTasks);
-router.post('/:projectId', createTask);
-router.put('/update/:taskId', updateTask);
-router.delete('/delete/:taskId', deleteTask);
+// /api/tasks/:taskId
+router.put('/tasks/:taskId', authMiddleware, updateTask);
+router.delete('/tasks/:taskId', authMiddleware, deleteTask);
 
 export default router;
