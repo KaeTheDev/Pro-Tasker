@@ -76,8 +76,14 @@ export default function ProjectDetailsPage() {
   const handleCreateTask = async (taskData: { title: string; description: string; status: TaskStatus }) => {
     try {
       const res = await api.post(`/projects/${id}/tasks`, taskData);
+      console.log("Response from server:", res.data);
+      
+      // Update the project with the response
       setProject(res.data);
       setShowTaskForm(false);
+      
+      // Optionally refetch to ensure sync
+      await fetchProject();
     } catch (err: any) {
       console.error("Failed to create task:", err);
       alert(err.response?.data?.message || "Failed to create task");

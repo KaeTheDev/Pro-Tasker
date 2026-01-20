@@ -6,7 +6,6 @@ import mongoose, { type Types } from "mongoose";
 interface AuthRequest extends Request {
     user?: { id: string };
 }
-
 // POST task to project
 // /api/projects/:id/tasks
 export const addTaskToProject = async (req: AuthRequest, res: Response) => {
@@ -24,7 +23,7 @@ export const addTaskToProject = async (req: AuthRequest, res: Response) => {
             return res.status(404).json({ message: "Project not found" });
         }
 
-        // Add new task
+        // Add new task - now TypeScript recognizes tasks!
         const newTask = {
             title,
             description,
@@ -32,14 +31,10 @@ export const addTaskToProject = async (req: AuthRequest, res: Response) => {
             _id: new mongoose.Types.ObjectId(),
         };
 
-        if (!(project as any).tasks) {
-            (project as any).tasks = [];
-        }
-
-        (project as any).tasks.push(newTask);
+        project.tasks.push(newTask as any); // No more type assertion needed for project.tasks
         await project.save();
 
-        res.status(201).json(project); // return the updated project
+        res.status(201).json(project);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
@@ -63,7 +58,7 @@ export const getProjects = async (req: AuthRequest, res: Response) => {
 export const getProjectById = async (req: AuthRequest, res: Response) => {
     try {
         const project = await Project.findOne({ 
-            _id: req.params.id as unknown as Types.ObjectId, 
+            _id: req.params.id as string, 
             user: req.user!.id 
         });
         
@@ -73,6 +68,7 @@ export const getProjectById = async (req: AuthRequest, res: Response) => {
         
         res.json(project);
     } catch (error) {
+        console.error("Error in getProjectById:", error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -90,6 +86,7 @@ export const createProject = async (req: AuthRequest, res: Response) => {
             name,
             description,
             user: req.user!.id,
+            tasks: [],
         });
         
         res.status(201).json(project);
