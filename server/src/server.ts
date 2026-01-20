@@ -49,7 +49,7 @@
 // });
 import express, { type Request, type Response } from 'express';
 import dotenv from 'dotenv';
-import cors from 'cors';
+import cors, { type CorsOptions } from 'cors';
 import connectDB from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
@@ -60,20 +60,34 @@ connectDB();
 
 const app = express();
 
-// ✅ Simpler CORS config - no custom function
-const corsOptions = {
-  origin: [
-    process.env.CLIENT_URL || 'https://pro-tasker-frontend-9k8n.onrender.com',
-    'http://localhost:3000',
-    'http://localhost:5173'
-  ],
+// ✅ CORS Configuration
+const allowedOrigins = [
+  process.env.CLIENT_URL || 'https://pro-tasker-frontend-9k8n.onrender.com',
+  'http://localhost:3000',
+  'http://localhost:5173'
+];
+
+const corsOptions: CorsOptions = {
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
+// ✅ Apply CORS before all routes
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+
+// ✅ Handle preflight - use a middleware function instead of '*'
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
