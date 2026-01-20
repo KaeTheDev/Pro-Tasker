@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import { useAuth } from "./context/AuthContext";
 import { Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
+import ProjectDetailsPage from "./pages/ProjectDetails";
 
 function App() {
   const { user } = useAuth();
@@ -20,6 +21,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/project-details" element={<ProjectDetailsPage />} />
       </Routes>
     </BrowserRouter>
   );
