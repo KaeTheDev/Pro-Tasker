@@ -56,7 +56,9 @@ export default function ProjectDetailsPage() {
   // Safety check for tasks - prevents crash if tasks is undefined
   const tasks = project.tasks || [];
   const filteredTasks =
-    filterStatus === "All Tasks" ? tasks : tasks.filter((t) => t.status === filterStatus);
+    filterStatus === "All Tasks"
+      ? tasks
+      : tasks.filter((t) => t.status === filterStatus);
 
   const getStatusColor = (status: TaskStatus): string => {
     switch (status) {
@@ -76,7 +78,11 @@ export default function ProjectDetailsPage() {
     return tasks.filter((t) => t.status === status).length;
   };
 
-  const handleCreateTask = async (taskData: { title: string; description: string; status: TaskStatus }) => {
+  const handleCreateTask = async (taskData: {
+    title: string;
+    description: string;
+    status: TaskStatus;
+  }) => {
     try {
       const res = await api.post(`/projects/${id}/tasks`, taskData);
       setProject(res.data);
@@ -88,17 +94,21 @@ export default function ProjectDetailsPage() {
     }
   };
 
-  const handleEditTask = async (taskData: { title: string; description: string; status: TaskStatus }) => {
+  const handleEditTask = async (taskData: {
+    title: string;
+    description: string;
+    status: TaskStatus;
+  }) => {
     if (!editingTask) return;
-    
+
     try {
       console.log("Updating task:", editingTask._id);
       console.log("Update data:", taskData);
-      
+
       const res = await api.put(`/tasks/${editingTask._id}`, taskData);
-      
+
       console.log("Update response:", res.data);
-      
+
       setEditingTask(null);
       setShowTaskForm(false);
       await fetchProject();
@@ -106,6 +116,26 @@ export default function ProjectDetailsPage() {
       console.error("Failed to update task:", err);
       console.error("Error response:", err.response?.data);
       alert(err.response?.data?.message || "Failed to update task");
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (!confirm("Are you sure you want to delete this task?")) return;
+
+    try {
+      console.log("Deleting task:", taskId);
+
+      // Use /tasks/:taskId endpoint
+      await api.delete(`/tasks/${taskId}`);
+
+      console.log("Task deleted successfully");
+
+      // Refetch project to update the UI
+      await fetchProject();
+    } catch (err: any) {
+      console.error("Failed to delete task:", err);
+      console.error("Error response:", err.response?.data);
+      alert(err.response?.data?.message || "Failed to delete task");
     }
   };
 
@@ -132,28 +162,48 @@ export default function ProjectDetailsPage() {
               <span className="text-blue-600 text-xl">📁</span>
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{project.name}</h1>
-              <p className="text-sm sm:text-base text-gray-600">{project.description}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                {project.name}
+              </h1>
+              <p className="text-sm sm:text-base text-gray-600">
+                {project.description}
+              </p>
             </div>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
             <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-              <div className="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">Total Tasks</div>
-              <div className="text-2xl sm:text-3xl font-bold text-gray-900">{getStatusCount("All")}</div>
+              <div className="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">
+                Total Tasks
+              </div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900">
+                {getStatusCount("All")}
+              </div>
             </div>
             <div className="bg-green-50 rounded-lg p-4 sm:p-6">
-              <div className="text-xs sm:text-sm text-green-700 mb-1 sm:mb-2">Completed</div>
-              <div className="text-2xl sm:text-3xl font-bold text-green-700">{getStatusCount("Done")}</div>
+              <div className="text-xs sm:text-sm text-green-700 mb-1 sm:mb-2">
+                Completed
+              </div>
+              <div className="text-2xl sm:text-3xl font-bold text-green-700">
+                {getStatusCount("Done")}
+              </div>
             </div>
             <div className="bg-orange-50 rounded-lg p-4 sm:p-6">
-              <div className="text-xs sm:text-sm text-orange-700 mb-1 sm:mb-2">In Progress</div>
-              <div className="text-2xl sm:text-3xl font-bold text-orange-700">{getStatusCount("In Progress")}</div>
+              <div className="text-xs sm:text-sm text-orange-700 mb-1 sm:mb-2">
+                In Progress
+              </div>
+              <div className="text-2xl sm:text-3xl font-bold text-orange-700">
+                {getStatusCount("In Progress")}
+              </div>
             </div>
             <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-              <div className="text-xs sm:text-sm text-gray-700 mb-1 sm:mb-2">To Do</div>
-              <div className="text-2xl sm:text-3xl font-bold text-gray-900">{getStatusCount("To Do")}</div>
+              <div className="text-xs sm:text-sm text-gray-700 mb-1 sm:mb-2">
+                To Do
+              </div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900">
+                {getStatusCount("To Do")}
+              </div>
             </div>
           </div>
         </div>
@@ -173,7 +223,7 @@ export default function ProjectDetailsPage() {
               <option>To Do</option>
             </select>
           </div>
-          <button 
+          <button
             onClick={() => setShowTaskForm(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2.5 rounded-lg flex items-center justify-center transition-colors shadow-sm text-sm sm:text-base"
           >
@@ -186,29 +236,43 @@ export default function ProjectDetailsPage() {
         <div className="space-y-3 sm:space-y-4">
           {filteredTasks.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-              <p className="text-gray-500">No tasks found. Click "Add Task" to create one.</p>
+              <p className="text-gray-500">
+                No tasks found. Click "Add Task" to create one.
+              </p>
             </div>
           ) : (
             filteredTasks.map((task) => (
-              <div key={task._id} className="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
+              <div
+                key={task._id}
+                className="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow"
+              >
                 <div className="flex flex-col sm:flex-row items-start justify-between">
                   <div className="flex-1 w-full sm:w-auto mb-3 sm:mb-0">
                     <div className="flex flex-col sm:flex-row sm:items-center mb-2 sm:mb-3">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-0 sm:mr-3">{task.title}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(task.status)} inline-block w-fit`}>
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-0 sm:mr-3">
+                        {task.title}
+                      </h3>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(
+                          task.status
+                        )} inline-block w-fit`}
+                      >
                         {task.status}
                       </span>
                     </div>
-                    <p className="text-sm sm:text-base text-gray-600">{task.description}</p>
+                    <p className="text-sm sm:text-base text-gray-600">
+                      {task.description}
+                    </p>
                   </div>
                   <div className="flex items-center sm:ml-4 space-x-2 self-end sm:self-start">
-                    <button 
+                    <button
                       onClick={() => openEditForm(task)}
                       className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
-                    <button 
+                    <button
+                      onClick={() => handleDeleteTask(task._id)}
                       className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -222,7 +286,7 @@ export default function ProjectDetailsPage() {
 
         {/* New Task Form Modal */}
         {showTaskForm && (
-          <NewTaskForm 
+          <NewTaskForm
             onClose={() => {
               setShowTaskForm(false);
               setEditingTask(null);
