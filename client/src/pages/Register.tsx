@@ -1,5 +1,6 @@
 import React, { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 
 const Register: React.FC = () => {
   const auth = useContext(AuthContext);
@@ -111,11 +112,15 @@ const Register: React.FC = () => {
         </form>
 
         {/* Bottom link */}
+
         <p className="mt-6 text-center text-sm text-gray-500">
           Already have an account?{" "}
-          <span className="text-blue-600 hover:text-blue-700 font-medium cursor-pointer">
-            Sign in
-          </span>
+          <Link
+            to="/login"
+            className="text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Sign In
+          </Link>
         </p>
       </div>
     </div>
