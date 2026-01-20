@@ -1,39 +1,40 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { getProjects } from "../api/projectService";
 
-const mockProjects = [
-  {
-    id: 1,
-    name: "Website Redesign",
-    description: "Complete redesign of company website with modern UI/UX",
-    tasksLabel: "3 tasks",
-    done: 1,
-    inProgress: 1,
-    blocked: 1,
-    progressPercent: 30,
-  },
-  {
-    id: 2,
-    name: "Mobile App Development",
-    description: "Build native iOS and Android applications",
-    tasksLabel: "2 tasks",
-    done: 1,
-    inProgress: 1,
-    blocked: 0,
-    progressPercent: 50,
-  },
-  {
-    id: 3,
-    name: "Marketing Campaign",
-    description: "Q1 marketing campaign planning and execution",
-    tasksLabel: "1 task",
-    done: 0,
-    inProgress: 0,
-    blocked: 1,
-    progressPercent: 10,
-  },
-];
+interface Project {
+  _id: string;
+  name: string;
+  description: string;
+  tasksLabel: string;
+  done: number;
+  inProgress: number;
+  blocked: number;
+  progressPercent: number;
+}
 
 const Dashboard: React.FC = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const data = await getProjects();
+        setProjects(data);
+      } catch (err: any) {
+        setError(err.response?.data?.message || "Failed to load projects");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  if(loading) return <p className="text-center mt-10">Loading projects...</p>;
+  if(error) return <p className="text-center mt-10 text-red-500">{error}</p>;
+
   return (
     <div className="min-h-screen bg-gray-50 px-8 py-10">
       {/* Header */}
@@ -51,9 +52,9 @@ const Dashboard: React.FC = () => {
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {mockProjects.map((project) => (
+        {projects.map((project) => (
           <div
-            key={project.id}
+            key={project._id}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col"
           >
             {/* Top row: icon + tasks pill */}
