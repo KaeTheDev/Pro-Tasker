@@ -1,45 +1,11 @@
 import type { Request, Response } from "express";
 import Project from "../models/Project.js";
-import mongoose, { type Types } from "mongoose";
+import Task from "../models/Task.js";
 
 // Extend request to include authenticated user
 interface AuthRequest extends Request {
     user?: { id: string };
 }
-// POST task to project
-// /api/projects/:id/tasks
-export const addTaskToProject = async (req: AuthRequest, res: Response) => {
-    try {
-        const id = req.params.id as string; 
-        const { title, description, status } = req.body;
-
-        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid project ID" });
-        }
-
-        const project = await Project.findOne({ _id: id, user: req.user!.id });
-        
-        if (!project) {
-            return res.status(404).json({ message: "Project not found" });
-        }
-
-        // Add new task - now TypeScript recognizes tasks!
-        const newTask = {
-            title,
-            description,
-            status,
-            _id: new mongoose.Types.ObjectId(),
-        };
-
-        project.tasks.push(newTask as any); // No more type assertion needed for project.tasks
-        await project.save();
-
-        res.status(201).json(project);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
-    }
-};
 
 // Get all projects for the logged-in user
 // GET /api/projects
@@ -53,8 +19,12 @@ export const getProjects = async (req: AuthRequest, res: Response) => {
     }
 };
 
-// Get single project by ID
-// GET /api/projects/:projectID
+// Get single project by ID with tasks
+// GET /api/projects/:id
+// Private
+// Get single project by ID with tasks
+// GET /api/projects/:id
+// Private
 export const getProjectById = async (req: AuthRequest, res: Response) => {
     try {
         const project = await Project.findOne({ 
@@ -65,8 +35,22 @@ export const getProjectById = async (req: AuthRequest, res: Response) => {
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
-        
-        res.json(project);
+
+        // Fetch tasks from Task collection - add type assertion
+        const tasks = await Task.find({ project: req.params.id as string });
+
+        console.log(`✅ Found ${tasks.length} tasks for project ${project._id}`);
+
+        // Return project with tasks array
+        res.json({
+            _id: project._id,
+            name: project.name,
+            description: project.description,
+            user: project.user,
+            createdAt: project.createdAt,
+            updatedAt: project.updatedAt,
+            tasks: tasks
+        });
     } catch (error) {
         console.error("Error in getProjectById:", error);
         res.status(500).json({ message: 'Server error' });
@@ -86,7 +70,6 @@ export const createProject = async (req: AuthRequest, res: Response) => {
             name,
             description,
             user: req.user!.id,
-            tasks: [],
         });
         
         res.status(201).json(project);
