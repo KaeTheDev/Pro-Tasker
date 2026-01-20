@@ -28,11 +28,14 @@ export default function ProjectDetailsPage() {
   const [error, setError] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("All Tasks");
   const [showTaskForm, setShowTaskForm] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const fetchProject = async () => {
     try {
       setLoading(true);
       const res = await api.get(`/projects/${id}`);
+      console.log("Fetched project:", res.data);
+      console.log("Tasks in fetched project:", res.data.tasks);
       setProject(res.data);
       setError("");
     } catch (err: any) {
@@ -76,18 +79,39 @@ export default function ProjectDetailsPage() {
   const handleCreateTask = async (taskData: { title: string; description: string; status: TaskStatus }) => {
     try {
       const res = await api.post(`/projects/${id}/tasks`, taskData);
-      console.log("Response from server:", res.data);
-      
-      // Update the project with the response
       setProject(res.data);
       setShowTaskForm(false);
-      
-      // Optionally refetch to ensure sync
       await fetchProject();
     } catch (err: any) {
       console.error("Failed to create task:", err);
       alert(err.response?.data?.message || "Failed to create task");
     }
+  };
+
+  const handleEditTask = async (taskData: { title: string; description: string; status: TaskStatus }) => {
+    if (!editingTask) return;
+    
+    try {
+      console.log("Updating task:", editingTask._id);
+      console.log("Update data:", taskData);
+      
+      const res = await api.put(`/tasks/${editingTask._id}`, taskData);
+      
+      console.log("Update response:", res.data);
+      
+      setEditingTask(null);
+      setShowTaskForm(false);
+      await fetchProject();
+    } catch (err: any) {
+      console.error("Failed to update task:", err);
+      console.error("Error response:", err.response?.data);
+      alert(err.response?.data?.message || "Failed to update task");
+    }
+  };
+
+  const openEditForm = (task: Task) => {
+    setEditingTask(task);
+    setShowTaskForm(true);
   };
 
   return (
@@ -178,10 +202,15 @@ export default function ProjectDetailsPage() {
                     <p className="text-sm sm:text-base text-gray-600">{task.description}</p>
                   </div>
                   <div className="flex items-center sm:ml-4 space-x-2 self-end sm:self-start">
-                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    <button 
+                      onClick={() => openEditForm(task)}
+                      className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
                       <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
-                    <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                    <button 
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
                       <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
                   </div>
@@ -194,8 +223,12 @@ export default function ProjectDetailsPage() {
         {/* New Task Form Modal */}
         {showTaskForm && (
           <NewTaskForm 
-            onClose={() => setShowTaskForm(false)}
-            onSubmit={handleCreateTask}
+            onClose={() => {
+              setShowTaskForm(false);
+              setEditingTask(null);
+            }}
+            onSubmit={editingTask ? handleEditTask : handleCreateTask}
+            initialData={editingTask || undefined}
           />
         )}
       </div>

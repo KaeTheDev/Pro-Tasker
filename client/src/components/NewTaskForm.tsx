@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckSquare, X } from 'lucide-react';
 
 type TaskStatus = 'To Do' | 'In Progress' | 'Done';
@@ -6,12 +6,26 @@ type TaskStatus = 'To Do' | 'In Progress' | 'Done';
 interface NewTaskFormProps {
   onClose?: () => void;
   onSubmit?: (data: { title: string; description: string; status: TaskStatus }) => void;
+  initialData?: {
+    title: string;
+    description: string;
+    status: TaskStatus;
+  };
 }
 
-export default function NewTaskForm({ onClose, onSubmit }: NewTaskFormProps) {
+export default function NewTaskForm({ onClose, onSubmit, initialData }: NewTaskFormProps) {
   const [taskTitle, setTaskTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<TaskStatus>('To Do');
+
+  // Populate form with initial data when editing
+  useEffect(() => {
+    if (initialData) {
+      setTaskTitle(initialData.title);
+      setDescription(initialData.description || '');
+      setStatus(initialData.status);
+    }
+  }, [initialData]);
 
   const handleSubmit = () => {
     if (onSubmit && taskTitle.trim()) {
@@ -29,6 +43,8 @@ export default function NewTaskForm({ onClose, onSubmit }: NewTaskFormProps) {
     if (onClose) onClose();
   };
 
+  const isEditing = !!initialData;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-xl max-w-md w-full">
@@ -38,7 +54,9 @@ export default function NewTaskForm({ onClose, onSubmit }: NewTaskFormProps) {
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-3">
               <CheckSquare className="w-6 h-6 text-blue-600" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900">Create New Task</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              {isEditing ? 'Edit Task' : 'Create New Task'}
+            </h2>
           </div>
           <button
             onClick={handleCancel}
@@ -105,7 +123,7 @@ export default function NewTaskForm({ onClose, onSubmit }: NewTaskFormProps) {
               onClick={handleSubmit}
               className="flex-1 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
             >
-              Create Task
+              {isEditing ? 'Update Task' : 'Create Task'}
             </button>
           </div>
         </div>
