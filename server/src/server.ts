@@ -14,10 +14,11 @@ app.use(express.json());
 
 // ✅ Enable CORS for frontend origin
 app.use(
-    cors({
-      origin: 'https://pro-tasker-frontend-9k8n.onrender.com', // Vite dev server
-    })
-  );
+  cors({
+    origin: process.env.CLIENT_URL, // read from .env
+    credentials: true,
+  })
+);
 
 // Routes
 app.use('/api/users', userRoutes);
