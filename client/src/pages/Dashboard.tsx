@@ -19,23 +19,26 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState("");
   const [showNewProjectForm, setShowNewProjectForm] = useState(false);
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const data = await getProjects();
-        setProjects(data);
-      } catch (err: any) {
-        setError(err.response?.data?.message || "Failed to load projects");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // ✅ Extract fetchProjects so we can call it again after creating a project
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      const data = await getProjects();
+      setProjects(data);
+      setError("");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to load projects");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProjects();
   }, []);
 
-  if(loading) return <p className="text-center mt-10">Loading projects...</p>;
-  if(error) return <p className="text-center mt-10 text-red-500">{error}</p>;
+  if (loading) return <p className="text-center mt-10">Loading projects...</p>;
+  if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
     <div className="min-h-screen bg-gray-50 px-8 py-10">
@@ -46,9 +49,10 @@ const Dashboard: React.FC = () => {
           Manage and track all your projects in one place
         </p>
 
-        <button 
-        onClick={() => setShowNewProjectForm(true)}
-        className="mt-6 inline-flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+        <button
+          onClick={() => setShowNewProjectForm(true)}
+          className="mt-6 inline-flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+        >
           <span className="text-lg">＋</span>
           <span>New Project</span>
         </button>
@@ -56,10 +60,13 @@ const Dashboard: React.FC = () => {
 
       {/* New Project Form Modal */}
       {showNewProjectForm && (
-        <NewProjectForm onClose={() => setShowNewProjectForm(false)} />
+        <NewProjectForm
+          onClose={() => setShowNewProjectForm(false)}
+          onProjectCreated={fetchProjects} // ✅ Refresh dashboard after creating
+        />
       )}
 
-      {/* Cards */}
+      {/* Project Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {projects.map((project) => (
           <div
@@ -78,12 +85,8 @@ const Dashboard: React.FC = () => {
 
             {/* Title + description */}
             <div className="mb-4">
-              <h2 className="text-base font-semibold text-gray-900">
-                {project.name}
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                {project.description}
-              </p>
+              <h2 className="text-base font-semibold text-gray-900">{project.name}</h2>
+              <p className="mt-1 text-sm text-gray-500">{project.description}</p>
             </div>
 
             {/* Status counts */}

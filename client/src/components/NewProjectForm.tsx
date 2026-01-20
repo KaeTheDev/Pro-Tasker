@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { FolderPlus, X } from 'lucide-react';
-import api from "../api/axios"; 
+import { useState } from "react";
+import { FolderPlus, X } from "lucide-react";
+import api from "../api/axios";
 
 interface NewProjectFormProps {
   onClose?: () => void;
@@ -8,13 +8,13 @@ interface NewProjectFormProps {
 }
 
 export default function NewProjectForm({ onClose, onProjectCreated }: NewProjectFormProps) {
-  const [projectName, setProjectName] = useState('');
-  const [description, setDescription] = useState('');
+  const [projectName, setProjectName] = useState("");
+  const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const handleSubmit = async() => {
-    if(!projectName.trim()) {
+  const handleSubmit = async () => {
+    if (!projectName.trim()) {
       setError("Project name is required");
       return;
     }
@@ -23,11 +23,18 @@ export default function NewProjectForm({ onClose, onProjectCreated }: NewProject
     setError("");
 
     try {
+      // ✅ Post to backend
       await api.post("/projects", { name: projectName, description });
+
+      // Reset form
       setProjectName("");
       setDescription("");
-      if(onProjectCreated) onProjectCreated();
-      if(onClose) onClose();
+
+      // Refresh dashboard
+      onProjectCreated?.();
+
+      // Close modal
+      onClose?.();
     } catch (err: any) {
       console.error(err);
       setError(err.response?.data?.message || "Failed to create project");
@@ -37,10 +44,10 @@ export default function NewProjectForm({ onClose, onProjectCreated }: NewProject
   };
 
   const handleCancel = () => {
-    setProjectName('');
-    setDescription('');
+    setProjectName("");
+    setDescription("");
     setError("");
-    if (onClose) onClose();
+    onClose?.();
   };
 
   return (
@@ -52,23 +59,16 @@ export default function NewProjectForm({ onClose, onProjectCreated }: NewProject
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-3">
               <FolderPlus className="w-6 h-6 text-blue-600" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              Create New Project
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-900">Create New Project</h2>
           </div>
-          <button
-            onClick={handleCancel}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={handleCancel} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form */}
         <div className="p-6">
-          {error && (
-            <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
-          )}
+          {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
 
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -84,9 +84,7 @@ export default function NewProjectForm({ onClose, onProjectCreated }: NewProject
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
