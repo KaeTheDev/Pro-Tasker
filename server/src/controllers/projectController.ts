@@ -9,38 +9,6 @@ interface AuthRequest extends Request {
 
 // POST task to project
 // /api/projects/:id/tasks
-// export const addTaskToProject = async (req: AuthRequest, res: Response) => {
-//     try {
-//       const { id } = req.params;
-//       const { title, description, status } = req.body;
-  
-//       if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-//         return res.status(400).json({ message: "Invalid project ID" });
-//       }
-  
-//       const project = await Project.findOne({ _id: id, user: req.user!.id });
-//       if (!project) return res.status(404).json({ message: "Project not found" });
-  
-//       // Add new task
-//       const newTask = {
-//         title,
-//         description,
-//         status,
-//         _id: new mongoose.Types.ObjectId(),
-//       };
-  
-//       project.tasks.push(newTask);
-//       await project.save();
-  
-//       res.status(201).json(project); // return the updated project
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ message: "Server error" });
-//     }
-//   };
-
-// POST task to project
-// /api/projects/:id/tasks
 export const addTaskToProject = async (req: AuthRequest, res: Response) => {
     try {
         const id = req.params.id as string; 
