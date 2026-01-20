@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getProjects } from "../api/projectService";
 import NewProjectForm from "../components/NewProjectForm";
 
@@ -14,12 +15,12 @@ interface Project {
 }
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showNewProjectForm, setShowNewProjectForm] = useState(false);
 
-  // ✅ Extract fetchProjects so we can call it again after creating a project
   const fetchProjects = async () => {
     try {
       setLoading(true);
@@ -45,13 +46,11 @@ const Dashboard: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col items-start mb-10">
         <h1 className="text-3xl font-semibold text-gray-900">My Projects</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Manage and track all your projects in one place
-        </p>
+        <p className="text-sm text-gray-500 mt-1">Manage and track all your projects in one place</p>
 
         <button
           onClick={() => setShowNewProjectForm(true)}
-          className="mt-6 inline-flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+          className="mt-6 inline-flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
         >
           <span className="text-lg">＋</span>
           <span>New Project</span>
@@ -62,7 +61,7 @@ const Dashboard: React.FC = () => {
       {showNewProjectForm && (
         <NewProjectForm
           onClose={() => setShowNewProjectForm(false)}
-          onProjectCreated={fetchProjects} // ✅ Refresh dashboard after creating
+          onProjectCreated={fetchProjects} // refresh after creating
         />
       )}
 
@@ -71,9 +70,9 @@ const Dashboard: React.FC = () => {
         {projects.map((project) => (
           <div
             key={project._id}
-            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col"
+            onClick={() => navigate(`/project/${project._id}`)}
+            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col cursor-pointer hover:shadow-md transition-shadow"
           >
-            {/* Top row: icon + tasks pill */}
             <div className="flex items-start justify-between mb-4">
               <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
                 <span className="text-blue-600 text-xl">📁</span>
@@ -83,13 +82,11 @@ const Dashboard: React.FC = () => {
               </span>
             </div>
 
-            {/* Title + description */}
             <div className="mb-4">
               <h2 className="text-base font-semibold text-gray-900">{project.name}</h2>
               <p className="mt-1 text-sm text-gray-500">{project.description}</p>
             </div>
 
-            {/* Status counts */}
             <div className="flex items-center gap-4 text-xs mb-4">
               <div className="flex items-center gap-1 text-green-500">
                 <span className="text-base">✓</span>
@@ -105,13 +102,9 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Progress bar */}
             <div className="mt-auto">
               <div className="h-2 w-full rounded-full bg-gray-200 overflow-hidden">
-                <div
-                  className="h-2 bg-blue-600 rounded-full"
-                  style={{ width: `${project.progressPercent}%` }}
-                />
+                <div className="h-2 bg-blue-600 rounded-full" style={{ width: `${project.progressPercent}%` }} />
               </div>
             </div>
           </div>

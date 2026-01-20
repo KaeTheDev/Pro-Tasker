@@ -5,8 +5,7 @@ export const getProjects = async () => {
 
   try {
     return response.data.map((project: any) => {
-      console.log("PROJECT:", project);
-
+      
       // Ensure tasks is an array
       const tasks = Array.isArray(project.tasks) ? project.tasks : [];
 
