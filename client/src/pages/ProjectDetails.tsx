@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Filter, Plus, Edit2, Trash2 } from "lucide-react";
 import api from "../api/axios";
+import NewTaskForm from "../components/NewTaskForm";
 
 type TaskStatus = "Done" | "In Progress" | "To Do";
 
@@ -26,6 +27,7 @@ export default function ProjectDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("All Tasks");
+  const [showTaskForm, setShowTaskForm] = useState(false);
 
   const fetchProject = async () => {
     try {
@@ -69,6 +71,17 @@ export default function ProjectDetailsPage() {
   const getStatusCount = (status: string) => {
     if (status === "All") return tasks.length;
     return tasks.filter((t) => t.status === status).length;
+  };
+
+  const handleCreateTask = async (taskData: { title: string; description: string; status: TaskStatus }) => {
+    try {
+      const res = await api.post(`/projects/${id}/tasks`, taskData);
+      setProject(res.data);
+      setShowTaskForm(false);
+    } catch (err: any) {
+      console.error("Failed to create task:", err);
+      alert(err.response?.data?.message || "Failed to create task");
+    }
   };
 
   return (
@@ -130,7 +143,10 @@ export default function ProjectDetailsPage() {
               <option>To Do</option>
             </select>
           </div>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2.5 rounded-lg flex items-center justify-center transition-colors shadow-sm text-sm sm:text-base">
+          <button 
+            onClick={() => setShowTaskForm(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2.5 rounded-lg flex items-center justify-center transition-colors shadow-sm text-sm sm:text-base"
+          >
             <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             Add Task
           </button>
@@ -168,6 +184,14 @@ export default function ProjectDetailsPage() {
             ))
           )}
         </div>
+
+        {/* New Task Form Modal */}
+        {showTaskForm && (
+          <NewTaskForm 
+            onClose={() => setShowTaskForm(false)}
+            onSubmit={handleCreateTask}
+          />
+        )}
       </div>
     </div>
   );
