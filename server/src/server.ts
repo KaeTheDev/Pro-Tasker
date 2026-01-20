@@ -60,49 +60,29 @@ connectDB();
 
 const app = express();
 
-// ✅ CORS Configuration with proper types
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  'https://pro-tasker-frontend-9k8n.onrender.com',
-  'http://localhost:3000',
-  'http://localhost:5173'
-].filter(Boolean) as string[];
-
-const corsOptions: cors.CorsOptions = {
-  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    // Allow requests with no origin (like mobile apps, curl, Postman)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log('Blocked origin:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+// ✅ Simpler CORS config - no custom function
+const corsOptions = {
+  origin: [
+    process.env.CLIENT_URL || 'https://pro-tasker-frontend-9k8n.onrender.com',
+    'http://localhost:3000',
+    'http://localhost:5173'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  maxAge: 86400
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
-// ✅ Apply CORS globally
 app.use(cors(corsOptions));
-
-// ✅ Handle preflight requests explicitly
 app.options('*', cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Health check endpoint
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({ 
     status: 'ok', 
     message: 'Server is running',
-    cors: 'enabled',
-    origin: req.headers.origin 
+    cors: 'enabled'
   });
 });
 
@@ -118,5 +98,4 @@ app.get('/', (req: Request, res: Response) => {
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Allowed origins: ${allowedOrigins.join(', ')}`);
 });
