@@ -1,24 +1,31 @@
 import React, { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Register: React.FC = () => {
   const auth = useContext(AuthContext);
   if (!auth) throw new Error("AuthContext must be used within AuthProvider");
 
+  const navigate = useNavigate();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
       await auth.register(name, email, password);
       setError("");
-      alert("Registration successful!"); // redirect to dashboard
+      navigate("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -104,10 +111,17 @@ const Register: React.FC = () => {
           {/* Button */}
           <button
             type="submit"
+            disabled={loading}
             className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
           >
-            <span className="text-lg">👤+</span>
-            <span>Create Account</span>
+            {loading ? (
+              "Creating Account..."
+            ) : (
+              <>
+                <span className="text-lg">👤+</span>
+                <span>Create Account</span>
+              </>
+            )}
           </button>
         </form>
 
