@@ -77,3 +77,29 @@ export const createProject = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+// DELETE /api/projects/:id
+// Delete a project
+export const deleteProject = async (req: AuthRequest, res: Response) => {
+    try {
+        const project = await Project.findOne({ 
+            _id: req.params.id as string, 
+            user: req.user!.id 
+        });
+        
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        // Delete all tasks associated with this project
+        await Task.deleteMany({ project: req.params.id as string });
+
+        // Delete the project
+        await project.deleteOne();
+
+        res.json({ message: 'Project and associated tasks deleted' });
+    } catch (error) {
+        console.error("Error deleting project:", error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
