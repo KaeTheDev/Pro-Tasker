@@ -1,26 +1,45 @@
 import { useState } from 'react';
 import { FolderPlus, X } from 'lucide-react';
+import api from "../api/axios"; 
 
 interface NewProjectFormProps {
   onClose?: () => void;
-  onSubmit?: (data: { name: string; description: string }) => void;
+  onProjectCreated?: () => void;
 }
 
-export default function NewProjectForm({ onClose, onSubmit }: NewProjectFormProps) {
+export default function NewProjectForm({ onClose, onProjectCreated }: NewProjectFormProps) {
   const [projectName, setProjectName] = useState('');
   const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = () => {
-    if (onSubmit && projectName.trim()) {
-      onSubmit({ name: projectName, description });
-      setProjectName('');
-      setDescription('');
+  const handleSubmit = async() => {
+    if(!projectName.trim()) {
+      setError("Project name is required");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      await api.post("/projects", { name: projectName, description });
+      setProjectName("");
+      setDescription("");
+      if(onProjectCreated) onProjectCreated();
+      if(onClose) onClose();
+    } catch (err: any) {
+      console.error(err);
+      setError(err.response?.data?.message || "Failed to create project");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCancel = () => {
     setProjectName('');
     setDescription('');
+    setError("");
     if (onClose) onClose();
   };
 
@@ -33,7 +52,9 @@ export default function NewProjectForm({ onClose, onSubmit }: NewProjectFormProp
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-3">
               <FolderPlus className="w-6 h-6 text-blue-600" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900">Create New Project</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Create New Project
+            </h2>
           </div>
           <button
             onClick={handleCancel}
@@ -45,6 +66,10 @@ export default function NewProjectForm({ onClose, onSubmit }: NewProjectFormProp
 
         {/* Form */}
         <div className="p-6">
+          {error && (
+            <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
+          )}
+
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Project Name <span className="text-red-500">*</span>
@@ -83,9 +108,10 @@ export default function NewProjectForm({ onClose, onSubmit }: NewProjectFormProp
             <button
               type="button"
               onClick={handleSubmit}
+              disabled={loading}
               className="flex-1 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
             >
-              Create Project
+              {loading ? "Creating..." : "Create Project"}
             </button>
           </div>
         </div>

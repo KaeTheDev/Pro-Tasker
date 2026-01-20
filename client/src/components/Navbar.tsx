@@ -28,7 +28,7 @@ export default function Navbar() {
           <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
             <BarChart3 className="w-6 h-6 text-white" />
           </div>
-          <span className="text-xl font-semibold text-gray-900">ProjectFlow</span>
+          <span className="text-xl font-semibold text-gray-900">Pro-Tasker</span>
         </div>
 
         {/* User Info and Logout */}
