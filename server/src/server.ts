@@ -1,4 +1,4 @@
-import express, { type Request, type Response } from 'express';
+import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db.js';
@@ -11,24 +11,36 @@ connectDB();
 
 const app = express();
 
-// ONLY JSON parsing
-app.use(express.json());
+// ✅ CORS must come BEFORE express.json()
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'https://pro-tasker-frontend-9k8n.onrender.com',
+  'http://localhost:3000'
+].filter(Boolean);
 
-// ONLY ONE CORS MIDDLEWARE - SIMPLIFIED
 app.use(cors({
-  origin: 'https://pro-tasker-frontend-9k8n.onrender.com',  
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, Postman, etc.)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+app.use(express.json());
 
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
-app.use('/api/tasks', taskRoutes);  
+app.use('/api/tasks', taskRoutes);
 
-app.get('/', (req: Request, res: Response) => {
-  res.json({ message: 'Server running! 🚀' });
+app.get('/', (req, res) => {
+  res.send('Server is running! 🚀');
 });
 
 const PORT = process.env.PORT || 3001;
