@@ -10,6 +10,8 @@ Pro-Tasker is a full-stack MERN application built as a modern, collaborative pro
 * Full CRUD operations with seamless frontend-backend integration
 * Deployment to Render and MongoDB Atlas
 
+* LIVE LINK: https://pro-tasker-frontend-9k8n.onrender.com
+
 ## Features & User Stories
 
 # User Management
