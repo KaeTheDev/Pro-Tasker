@@ -170,10 +170,12 @@ Pro-Tasker/
 │  │  ├─ pages/          # Page components (Dashboard, ProjectDetails, Login, Register)
 │  │  └─ App.tsx         # Routes and layout
 ├─ server/               # Node/Express backend
-│  ├─ controllers/       # Controllers for User, Project, Task
-│  ├─ middleware/        # Auth and error handling
-│  ├─ models/            # Mongoose models (User, Project, Task)
-│  ├─ routes/            # Express routes
+├  |─ src/   
+    |- config          
+│   ├─ controllers/       # Controllers for User, Project, Task
+│   ├─ middleware/        # Auth and error handling
+│   ├─ models/            # Mongoose models (User, Project, Task)
+│   ├─ routes/            # Express routes
 │  └─ server.ts          # Server entry point
 └─ README.md             # Documentation
 
