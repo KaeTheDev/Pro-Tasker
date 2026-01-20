@@ -4,6 +4,7 @@ import Register from "./pages/Register";
 import Home from "./pages/Home";
 import { useAuth } from "./context/AuthContext";
 import { Navigate } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   const { user } = useAuth();
@@ -18,6 +19,7 @@ function App() {
         />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
   );
