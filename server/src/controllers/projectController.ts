@@ -13,15 +13,38 @@ interface AuthRequest extends Request {
 export const getProjects = async (req: AuthRequest, res: Response) => {
     try {
         const projects = await Project.find({ user: req.user!.id });
-        res.json(projects);
+        
+        // For each project, fetch its tasks and calculate stats
+        const projectsWithStats = await Promise.all(
+            projects.map(async (project) => {
+                const tasks = await Task.find({ project: project._id });
+                
+                const done = tasks.filter(t => t.status === 'Done').length;
+                const inProgress = tasks.filter(t => t.status === 'In Progress').length;
+                const toDo = tasks.filter(t => t.status === 'To Do').length;
+                const total = tasks.length;
+                const progressPercent = total > 0 ? Math.round((done / total) * 100) : 0;
+                
+                return {
+                    _id: project._id,
+                    name: project.name,
+                    description: project.description,
+                    tasksLabel: `${total} task${total !== 1 ? 's' : ''}`,
+                    done,
+                    inProgress,
+                    blocked: toDo,
+                    progressPercent
+                };
+            })
+        );
+        
+        res.json(projectsWithStats);
     } catch(error) {
+        console.error("Error in getProjects:", error);
         res.status(500).json({ message: 'Server error' });
     }
 };
 
-// Get single project by ID with tasks
-// GET /api/projects/:id
-// Private
 // Get single project by ID with tasks
 // GET /api/projects/:id
 // Private
