@@ -15,7 +15,7 @@ app.use(express.json());
 // ✅ Enable CORS for frontend origin
 app.use(
     cors({
-      origin: 'http://localhost:5173', // Vite dev server
+      origin: 'https://pro-tasker-frontend-9k8n.onrender.com', // Vite dev server
     })
   );
 
