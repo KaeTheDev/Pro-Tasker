@@ -18,7 +18,13 @@ const Register: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
+  
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+  
     try {
       await auth.register(name, email, password);
       setError("");
@@ -29,7 +35,7 @@ const Register: React.FC = () => {
       setLoading(false);
     }
   };
-
+  
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
       {/* Icon */}
