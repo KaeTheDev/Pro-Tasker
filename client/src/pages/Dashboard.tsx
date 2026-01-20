@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getProjects } from "../api/projectService";
+import NewProjectForm from "../components/NewProjectForm";
 
 interface Project {
   _id: string;
@@ -16,6 +17,7 @@ const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showNewProjectForm, setShowNewProjectForm] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -44,11 +46,18 @@ const Dashboard: React.FC = () => {
           Manage and track all your projects in one place
         </p>
 
-        <button className="mt-6 inline-flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+        <button 
+        onClick={() => setShowNewProjectForm(true)}
+        className="mt-6 inline-flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
           <span className="text-lg">＋</span>
           <span>New Project</span>
         </button>
       </div>
+
+      {/* New Project Form Modal */}
+      {showNewProjectForm && (
+        <NewProjectForm onClose={() => setShowNewProjectForm(false)} />
+      )}
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
