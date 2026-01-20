@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { type Request, type Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db.js';
@@ -10,68 +10,28 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
+// ONLY JSON parsing
 app.use(express.json());
 
-// ✅ Enable CORS for frontend origin
-// app.use(
-//   cors({
-//     origin: process.env.CLIENT_URL, // read from .env
-//     credentials: true,
-//   })
-// );
-
-// ✅ FIXED CORS - Handle preflight first, then cors middleware
-app.use((req, res, next) => {
-  // Handle OPTIONS preflight immediately
-  if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Origin', process.env.CLIENT_URL || 'https://pro-tasker-frontend-9k8n.onrender.com');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    return res.status(200).end();
-  }
-  next();
-});
-
-// ✅ Simple, reliable CORS config
+// ONLY ONE CORS MIDDLEWARE - SIMPLIFIED
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'https://pro-tasker-frontend-9k8n.onrender.com',
+  origin: 'https://pro-tasker-frontend-9k8n.onrender.com',  
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        process.env.CLIENT_URL,
-        'https://pro-tasker-frontend-9k8n.onrender.com', // fallback
-        'http://localhost:3000' // dev
-      ].filter(Boolean);
-      
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  })
-);
-
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
-app.use('/api', taskRoutes);
+app.use('/api/tasks', taskRoutes);  
 
-app.get('/', (req, res) => {
-    res.send('Server is running! 🚀')
+app.get('/', (req: Request, res: Response) => {
+  res.json({ message: 'Server running! 🚀' });
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, ()=> {
-    console.log(`Server running on http://localhost:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
