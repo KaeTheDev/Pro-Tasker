@@ -1,28 +1,70 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
-import { useAuth } from "./context/AuthContext";
-import { Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import ProjectDetailsPage from "./pages/ProjectDetails";
+import Navbar from "./components/Navbar";
+import { useAuth } from "./context/AuthContext";
 
-function App() {
+// Protected Route wrapper
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  return user ? <>{children}</> : <Navigate to="/login" />;
+}
+
+// Layout with Navbar
+function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <Navbar />
+      {children}
+    </>
+  );
+}
+
+function AppRoutes() {
   const { user } = useAuth();
 
   return (
+    <Routes>
+      {/* Public routes - no navbar */}
+      <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Home />} />
+      <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+      <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
+
+      {/* Protected routes - with navbar */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedLayout>
+              <Dashboard />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/project/:id"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedLayout>
+              <ProjectDetailsPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Catch all - redirect to home */}
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
     <BrowserRouter>
-      <Routes>
-        {/* Home page: redirect to dashboard if logged in */}
-        <Route
-          path="/"
-          element={user ? <Navigate to="/dashboard" /> : <Home />}
-        />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/project-details" element={<ProjectDetailsPage />} />
-      </Routes>
+      <AppRoutes />
     </BrowserRouter>
   );
 }
